@@ -21,8 +21,10 @@ const fetchCommitData = async (owner, repo, hash) => {
     const data = response.data;
 
     return {
-      author: data.commit.author.name || data.author.login,
-      message: data.commit.message,
+      author:
+        data.author?.login ||
+        data.commit.author?.name ||
+        "unknown", message: data.commit.message,
       timestamp: data.commit.author.date,
       additions: data.stats.additions,
       deletions: data.stats.deletions,
@@ -83,7 +85,7 @@ const fetchPullRequestData = async (owner, repo, pullNumber) => {
 const preprocessData = (rawData, type) => {
   // Limit patch size to avoid hitting LLM token limits
   const MAX_PATCH_LENGTH = 2000;
-  
+
   const processedFiles = rawData.files.map(file => {
     let patch = file.patch || '';
     if (patch.length > MAX_PATCH_LENGTH) {

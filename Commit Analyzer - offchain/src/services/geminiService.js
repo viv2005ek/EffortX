@@ -17,8 +17,9 @@ const analyzeContribution = async (data) => {
   try {
     // Using gemini-1.5-flash for speed and cost efficiency, 
     // but gemini-1.5-pro can be used for deeper analysis.
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash'
+    });
     const prompt = getAnalysisPrompt(data);
 
     const result = await model.generateContent(prompt);
@@ -27,7 +28,7 @@ const analyzeContribution = async (data) => {
 
     // Clean response text in case AI included markdown code blocks
     const cleanJson = text.replace(/```json|```/g, '').trim();
-    
+
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error('Gemini API Error:', error);
