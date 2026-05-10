@@ -95,6 +95,78 @@ export async function initializeProtocol(wallet, treasuryWallet) {
 }
 
 // ============================================================
+// READ OPERATIONS
+// ============================================================
+
+/**
+ * Fetch all UserProfile accounts and sort them for the leaderboard.
+ * Sort: ecoinBalance DESC, totalXp DESC, createdAt ASC
+ * @param {import('@project-serum/anchor').Program} program
+ */
+export async function fetchAllProfiles(program) {
+  const profiles = await program.account.userProfile.all();
+  
+  // Format and calculate deterministic rank dynamically
+  const formatted = profiles.map(p => ({
+    wallet: p.account.wallet.toString(),
+    githubUsername: p.account.githubUsername,
+    totalXp: p.account.totalXp.toNumber(),
+    averageScore: p.account.averageScore.toNumber(),
+    totalProofs: p.account.totalProofs.toNumber(),
+    ecoinBalance: p.account.ecoinBalance.toNumber(),
+    ecoinEarned: p.account.ecoinEarned.toNumber(),
+    createdAt: p.account.createdAt.toNumber(),
+  }));
+
+  // Sort logic
+  formatted.sort((a, b) => {
+    if (b.ecoinBalance !== a.ecoinBalance) {
+      return b.ecoinBalance - a.ecoinBalance; // 1. ECOIN DESC
+    }
+    if (b.totalXp !== a.totalXp) {
+      return b.totalXp - a.totalXp; // 2. XP DESC
+    }
+    return a.createdAt - b.createdAt; // 3. Created ASC (older wins)
+  });
+
+  // Assign ranks
+  formatted.forEach((p, index) => {
+    p.globalRank = index + 1;
+  });
+
+  return formatted;
+}
+
+/**
+ * Fetch all ProofRecords for a specific user.
+ * @param {import('@project-serum/anchor').Program} program
+ * @param {import('@solana/web3.js').PublicKey} userPubkey
+ */
+export async function fetchUserProofs(program, userPubkey) {
+  // We fetch all proofs, but unfortunately filtering by owner requires knowing offset.
+  // The owner Pubkey is at offset 8 (discriminator is 8 bytes).
+  const proofs = await program.account.proofRecord.all([
+    {
+      memcmp: {
+        offset: 8,
+        bytes: userPubkey.toBase58(),
+      },
+    },
+  ]);
+  
+  return proofs.map(p => ({
+    owner: p.account.owner.toString(),
+    githubUsername: p.account.githubUsername,
+    githubUrl: p.account.githubUrl,
+    commitHash: p.account.commitHash,
+    effortScore: p.account.effortScore.toNumber(),
+    rewardCoins: p.account.rewardCoins.toNumber(),
+    timestamp: p.account.timestamp.toNumber(),
+    proofNumber: p.account.proofNumber.toNumber(),
+  })).sort((a, b) => b.timestamp - a.timestamp);
+}
+
+// ============================================================
 // CREATE PROFILE
 // ============================================================
 

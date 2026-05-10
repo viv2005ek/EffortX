@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { getProvider, getProgram } from '../solana/provider.js';
-import { fetchUserProfile } from '../solana/program.js';
+import { fetchUserProfile, fetchAllProfiles, fetchUserProofs } from '../solana/program.js';
 
 // ============================================================
 // Solana Context — provides wallet state + on-chain profile
@@ -18,12 +18,19 @@ export function SolanaContextProvider({ children }) {
   const [profileChecked, setProfileChecked] = useState(false);
   const lastCheckedKey = useRef(null);
 
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [userRank, setUserRank] = useState(null);
+  const [userProofs, setUserProofs] = useState([]);
+
   /**
-   * Load (or reload) the on-chain profile for the connected wallet.
+   * Load (or reload) the on-chain profile and global leaderboard for the connected wallet.
    */
   const loadProfile = useCallback(async () => {
     if (!wallet?.publicKey) {
       setProfile(null);
+      setLeaderboard([]);
+      setUserRank(null);
+      setUserProofs([]);
       setProfileChecked(false);
       return;
     }
@@ -34,12 +41,30 @@ export function SolanaContextProvider({ children }) {
     try {
       const provider = getProvider(wallet);
       const program = getProgram(provider);
+      
       const onChainProfile = await fetchUserProfile(wallet.publicKey, program);
       setProfile(onChainProfile); // null = no profile yet
+
+      const allProfiles = await fetchAllProfiles(program);
+      setLeaderboard(allProfiles);
+
+      if (onChainProfile) {
+        const myRankInfo = allProfiles.find(p => p.wallet === wallet.publicKey.toBase58());
+        setUserRank(myRankInfo?.globalRank || null);
+        
+        const proofs = await fetchUserProofs(program, wallet.publicKey);
+        setUserProofs(proofs);
+      } else {
+        setUserProofs([]);
+      }
+
     } catch (err) {
-      console.error('Failed to load profile:', err);
-      setProfileError('Could not load on-chain profile.');
+      console.error('Failed to load profile or leaderboard:', err);
+      setProfileError('Could not load on-chain profile data.');
       setProfile(null);
+      setLeaderboard([]);
+      setUserRank(null);
+      setUserProofs([]);
     } finally {
       setProfileLoading(false);
       setProfileChecked(true);
@@ -74,6 +99,9 @@ export function SolanaContextProvider({ children }) {
         profileLoading,
         profileError,
         profileChecked,      // ← new: true after first fetch completes
+        leaderboard,
+        userRank,
+        userProofs,
         refreshProfile: loadProfile,
         hasProfile: profile !== null,
         isWalletConnected: !!wallet?.publicKey,

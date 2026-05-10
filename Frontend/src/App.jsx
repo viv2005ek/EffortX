@@ -13,6 +13,7 @@ import { analyzeCommit } from './services/api';
 import { useSolana } from './context/SolanaContext.jsx';
 import { initializeProtocol } from './solana/program.js';
 import toast from 'react-hot-toast';
+import Dashboard from './components/Dashboard';
 
 function InitAdminButton() {
   const { isWalletConnected, wallet } = useSolana();
@@ -34,17 +35,20 @@ function InitAdminButton() {
     }
   };
 
-  return
-    // (
-    // <button 
-    //   onClick={handleInit}
-    //   disabled={loading}
-    //   className="text-xs text-accent-green hover:text-white transition-colors"
-    // >
-    //   {loading ? 'Initializing...' : '[Admin: Init Protocol]'}
-    // </button>
-    //)
-    ;
+  // Only the designated admin should see this button
+  const ADMIN_WALLET = 'GNN25gvBm4LZ9sWFBqpDKtYFtpeyT9krJtPpU4myEpJP';
+  if (wallet.publicKey?.toBase58() !== ADMIN_WALLET) return null;
+
+  return (
+    <button
+      onClick={handleInit}
+      disabled={loading}
+      className="text-[10px] uppercase tracking-wider font-bold text-accent-green/60 hover:text-accent-green transition-colors bg-accent-green/10 px-2 py-1 rounded"
+      title="Initialize Global Protocol State"
+    >
+      {loading ? 'Initializing...' : 'Init Protocol'}
+    </button>
+  );
 
 }
 
@@ -53,6 +57,7 @@ function AppContent() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [showCreateProfile, setShowCreateProfile] = useState(false);
+  const [currentRoute, setCurrentRoute] = useState('home');
 
   const { isWalletConnected, profile, profileLoading, profileChecked } = useSolana();
 
@@ -121,7 +126,10 @@ function AppContent() {
       <nav className="fixed top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center backdrop-blur-md bg-background/80 border-b border-white/5">
         <div
           className="flex items-center gap-2 group cursor-pointer"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() => {
+            setCurrentRoute('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         >
           <img
             className="w-8 h-8 rounded-lg bg-accent-green flex items-center justify-center font-black text-black group-hover:shadow-glow transition-all"
@@ -134,9 +142,32 @@ function AppContent() {
         </div>
 
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-main/60">
-          <button onClick={scrollToAnalyzer} className="hover:text-white transition-colors">Analyze</button>
-          <a href="#about" className="hover:text-white transition-colors">About EffortX</a>
-          <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+          {isWalletConnected && profile && (
+            <button
+              onClick={() => setCurrentRoute('dashboard')}
+              className={`transition-colors font-bold ${currentRoute === 'dashboard' ? 'text-accent-green' : 'hover:text-white'}`}
+            >
+              Dashboard
+            </button>
+          )}
+          <button
+            onClick={() => {
+              if (currentRoute !== 'home') setCurrentRoute('home');
+              setTimeout(scrollToAnalyzer, 100);
+            }}
+            className="hover:text-white transition-colors"
+          >
+            Analyze
+          </button>
+          {/* {currentRoute === 'home' && (
+            <>
+              <a href="#about" className="hover:text-white transition-colors">About EffortX</a>
+              <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+            </>
+          )} */}
+
+
+
           <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
 
           <WalletButton />
@@ -167,41 +198,61 @@ function AppContent() {
 
       {/* ── Main Content ──────────────────────────────────────────────────────── */}
       <main className="pt-20">
-        <HeroSection onScrollToAnalyzer={scrollToAnalyzer} />
+        <AnimatePresence mode="wait">
+          {currentRoute === 'home' ? (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <HeroSection onScrollToAnalyzer={scrollToAnalyzer} />
 
-        <div className="pb-40">
-          <AnalyzerForm onAnalyze={handleAnalyze} isLoading={isLoading} />
+              <div className="pb-40">
+                <AnalyzerForm onAnalyze={handleAnalyze} isLoading={isLoading} />
 
-          <AnimatePresence>
-            {isLoading && <LoadingState />}
-          </AnimatePresence>
+                <AnimatePresence>
+                  {isLoading && <LoadingState />}
+                </AnimatePresence>
 
-          <AnimatePresence mode="wait">
-            {result && (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <ResultDashboard data={result} />
-              </motion.div>
-            )}
+                <AnimatePresence mode="wait">
+                  {result && (
+                    <motion.div
+                      key="result"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <ResultDashboard data={result} />
+                    </motion.div>
+                  )}
 
-            {error && (
-              <motion.div
-                key="error"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <ErrorCard message={error} onRetry={handleRetry} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  {error && (
+                    <motion.div
+                      key="error"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <ErrorCard message={error} onRetry={handleRetry} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-          <AboutSection />
-          <HowItWorks />
-        </div>
+                <AboutSection />
+                <HowItWorks />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <Dashboard />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* ── Footer ────────────────────────────────────────────────────────────── */}
