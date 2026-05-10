@@ -27,7 +27,7 @@ This is the off-chain AI verification service for **EffortX**, an AI-powered dev
    Create a `.env` file (template provided) and add your keys:
    - `GITHUB_TOKEN`: GitHub Personal Access Token (for higher rate limits).
    - `GEMINI_API_KEY`: Google Gemini API Key.
-   - `PORT`: Server port (default 5000).
+   - `PORT`: Server port (default 5000). (deployed- https://effortx-commit-analyzer.vercel.app/)
 
 3. **Run the Server**:
    ```bash

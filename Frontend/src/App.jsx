@@ -103,7 +103,7 @@ function AppContent() {
       console.error("Analysis error:", err);
       setError(
         err.response?.data?.message ||
-        "Backend connection error. Please ensure the EffortX API is running on localhost:5000"
+        "Backend connection error. Please ensure the EffortX API is running on https://effortx-commit-analyzer.vercel.app/api/health"
       );
     } finally {
       setIsLoading(false);
@@ -159,16 +159,16 @@ function AppContent() {
           >
             Analyze
           </button>
-          {/* {currentRoute === 'home' && (
+          {currentRoute === 'home' && !isWalletConnected && (
             <>
               <a href="#about" className="hover:text-white transition-colors">About EffortX</a>
               <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
             </>
-          )} */}
+          )}
 
 
 
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+          <a href="https://github.com/viv2005ek/EffortX" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
 
           <WalletButton />
 
