@@ -54,12 +54,12 @@ const ScoreCard = ({ score }) => {
 
       <div className="mt-8 flex gap-4">
         <div className="px-4 py-2 rounded-lg bg-accent-green/10 border border-accent-green/20">
-          <span className="text-accent-green font-bold">Top 2%</span>
-          <span className="text-text-main/40 text-[10px] block uppercase">Percentile</span>
+          <span className="text-accent-green font-bold uppercase text-xs">Verified</span>
+          <span className="text-text-main/40 text-[10px] block uppercase">Authenticity</span>
         </div>
         <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10">
-          <span className="text-white font-bold">Elite</span>
-          <span className="text-text-main/40 text-[10px] block uppercase">Tier</span>
+          <span className="text-white font-bold uppercase text-xs">{score > 750 ? "Architect" : "Core"}</span>
+          <span className="text-text-main/40 text-[10px] block uppercase">Profile</span>
         </div>
       </div>
     </div>

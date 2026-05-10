@@ -1,0 +1,3 @@
+contract deployed using solana playground
+contract address : HD2TgtDaw6hAJBLfPNg79CZpLbBSaXAdKcDCSz37wTN7
+idl.json is also provided in same 

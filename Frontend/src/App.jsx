@@ -1,16 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroSection from './components/HeroSection';
 import AnalyzerForm from './components/AnalyzerForm';
 import LoadingState from './components/LoadingState';
 import ResultDashboard from './components/ResultDashboard';
 import ErrorCard from './components/ErrorCard';
+import AboutSection from './components/AboutSection';
+import HowItWorks from './components/HowItWorks';
+import WalletButton from './components/WalletButton';
+import CreateProfileModal from './components/CreateProfileModal';
 import { analyzeCommit } from './services/api';
+import { useSolana } from './context/SolanaContext.jsx';
+import { initializeProtocol } from './solana/program.js';
+import toast from 'react-hot-toast';
 
-function App() {
+function InitAdminButton() {
+  const { isWalletConnected, wallet } = useSolana();
+  const [loading, setLoading] = useState(false);
+
+  if (!isWalletConnected) return null;
+
+  const handleInit = async () => {
+    setLoading(true);
+    const toastId = toast.loading('Initializing protocol...');
+    try {
+      const sig = await initializeProtocol(wallet, wallet.publicKey);
+      toast.success('Protocol Initialized on-chain!', { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || 'Initialization failed', { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return
+    // (
+    // <button 
+    //   onClick={handleInit}
+    //   disabled={loading}
+    //   className="text-xs text-accent-green hover:text-white transition-colors"
+    // >
+    //   {loading ? 'Initializing...' : '[Admin: Init Protocol]'}
+    // </button>
+    //)
+    ;
+
+}
+
+function AppContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [showCreateProfile, setShowCreateProfile] = useState(false);
+
+  const { isWalletConnected, profile, profileLoading, profileChecked } = useSolana();
+
+  // ─── Auto-show create-profile modal ────────────────────────────────────────
+  // When wallet is connected, loading is done, and profile check came back null
+  // (meaning the user has no on-chain profile yet), pop the modal automatically.
+  useEffect(() => {
+    if (isWalletConnected && profileChecked && !profileLoading && profile === null) {
+      // Small delay so wallet modal has time to close first
+      const timer = setTimeout(() => setShowCreateProfile(true), 600);
+      return () => clearTimeout(timer);
+    }
+    // If they already have a profile, make sure modal is closed
+    if (isWalletConnected && profile !== null) {
+      setShowCreateProfile(false);
+    }
+  }, [isWalletConnected, profile, profileLoading, profileChecked]);
+
+  // Close modal and reset when wallet disconnects
+  useEffect(() => {
+    if (!isWalletConnected) {
+      setShowCreateProfile(false);
+    }
+  }, [isWalletConnected]);
 
   const handleAnalyze = async (githubUrl) => {
     setIsLoading(true);
@@ -18,21 +84,20 @@ function App() {
     setResult(null);
 
     try {
-      // Small artificial delay to show off the premium loading state
       const [data] = await Promise.all([
         analyzeCommit(githubUrl),
         new Promise(resolve => setTimeout(resolve, 3000))
       ]);
 
       if (data.success) {
-        setResult(data.data);
+        setResult({ ...data.data, githubUrl }); // Ensure githubUrl is passed down to StoreProofButton
       } else {
         setError(data.message || "Failed to analyze contribution.");
       }
     } catch (err) {
       console.error("Analysis error:", err);
       setError(
-        err.response?.data?.message || 
+        err.response?.data?.message ||
         "Backend connection error. Please ensure the EffortX API is running on localhost:5000"
       );
     } finally {
@@ -41,8 +106,7 @@ function App() {
   };
 
   const scrollToAnalyzer = () => {
-    const element = document.getElementById('analyzer');
-    element?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('analyzer')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleRetry = () => {
@@ -52,30 +116,59 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-text-main font-sans selection:bg-accent-green/30 selection:text-white">
-      {/* Header / Logo */}
-      <nav className="fixed top-0 left-0 w-full z-40 px-6 py-6 flex justify-between items-center backdrop-blur-sm bg-background/50 border-b border-white/5">
-        <div className="flex items-center gap-2 group cursor-pointer">
-          <div className="w-8 h-8 rounded-lg bg-accent-green flex items-center justify-center font-black text-black group-hover:shadow-glow transition-all">
-            E
-          </div>
-          <span className="text-xl font-black text-heading tracking-tighter">
+
+      {/* ── Navbar ───────────────────────────────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center backdrop-blur-md bg-background/80 border-b border-white/5">
+        <div
+          className="flex items-center gap-2 group cursor-pointer"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <img
+            className="w-8 h-8 rounded-lg bg-accent-green flex items-center justify-center font-black text-black group-hover:shadow-glow transition-all"
+            src="./logo.png"
+            alt="EffortX"
+          />
+          <span className="text-2xl font-black text-heading tracking-tighter">
             Effort<span className="text-accent-green group-hover:text-white transition-colors">X</span>
           </span>
         </div>
-        
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-main/60">
-          <a href="#" className="hover:text-white transition-colors">Network</a>
-          <a href="#" className="hover:text-white transition-colors">Documentation</a>
-          <a href="#" className="hover:text-white transition-colors">API</a>
-          <button className="px-5 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all">
-            Connect Wallet
-          </button>
+
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-main/60">
+          <button onClick={scrollToAnalyzer} className="hover:text-white transition-colors">Analyze</button>
+          <a href="#about" className="hover:text-white transition-colors">About EffortX</a>
+          <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+
+          <WalletButton />
+
+          {/* Nudge badge: connected but no profile and check completed */}
+          <AnimatePresence>
+            {isWalletConnected && profileChecked && !profileLoading && profile === null && (
+              <motion.button
+                key="nudge"
+                initial={{ opacity: 0, scale: 0.85, x: 10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.85, x: 10 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                onClick={() => setShowCreateProfile(true)}
+                className="px-3 py-1.5 rounded-lg bg-accent-green/10 border border-accent-green/30 text-accent-green text-xs font-bold hover:bg-accent-green/20 transition-all whitespace-nowrap"
+              >
+                Create Profile →
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Mobile wallet button */}
+        <div className="md:hidden">
+          <WalletButton />
         </div>
       </nav>
 
+      {/* ── Main Content ──────────────────────────────────────────────────────── */}
       <main className="pt-20">
         <HeroSection onScrollToAnalyzer={scrollToAnalyzer} />
-        
+
         <div className="pb-40">
           <AnalyzerForm onAnalyze={handleAnalyze} isLoading={isLoading} />
 
@@ -105,20 +198,22 @@ function App() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <AboutSection />
+          <HowItWorks />
         </div>
       </main>
 
-      {/* Footer */}
+      {/* ── Footer ────────────────────────────────────────────────────────────── */}
       <footer className="py-20 border-t border-white/5 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center font-bold text-[10px] text-white">
-              E
-            </div>
+            <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center font-bold text-[10px] text-white">E</div>
             <span className="text-sm font-bold text-heading">EffortX Engine v1.0</span>
+            <InitAdminButton />
           </div>
           <div className="text-sm text-text-main/40">
-            © 2026 EffortX Platform. Powered by Gemini 2.5 Pro.
+            © 2026 EffortX Platform. Powered by Gemini 2.5 Pro + Solana.
           </div>
           <div className="flex gap-6 text-text-main/40 hover:text-text-main transition-colors text-xs uppercase tracking-widest font-bold">
             <a href="#">Privacy</a>
@@ -127,8 +222,16 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* ── Create Profile Modal ───────────────────────────────────────────────── */}
+      <CreateProfileModal
+        isOpen={showCreateProfile}
+        onClose={() => setShowCreateProfile(false)}
+      />
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return <AppContent />;
+}

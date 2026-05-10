@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Github, Search, Loader2 } from 'lucide-react';
+import { Code2 as Github, Search, Loader2 } from 'lucide-react';
 
 const AnalyzerForm = ({ onAnalyze, isLoading }) => {
   const [url, setUrl] = useState('');

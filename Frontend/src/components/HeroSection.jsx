@@ -33,12 +33,12 @@ const HeroSection = ({ onScrollToAnalyzer }) => {
           Effort<span className="text-accent-green">X</span>
         </h1>
         
-        <p className="text-2xl md:text-3xl font-medium text-white mb-4 tracking-wide">
-          AI-Verified Proof of Real Developer Work
+        <p className="text-2xl md:text-3xl font-medium text-white mb-4 tracking-tight">
+          AI-Powered Infrastructure for Developer Reputation
         </p>
         
-        <p className="text-lg text-text-main/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-          The ultimate reputation layer for engineers. Analyze GitHub commits and PRs using Gemini AI to generate objective Effort Scores, reward coins, and architectural insights.
+        <p className="text-lg text-text-main/60 max-w-2xl mx-auto mb-10 leading-relaxed">
+          Move beyond commit counts. EffortX analyzes the architectural depth and engineering impact of your work using Gemini AI to generate verifiable proof of quality.
         </p>
 
         <motion.button

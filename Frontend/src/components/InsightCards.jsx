@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Coins, Zap, ShieldCheck, BarChart3 } from 'lucide-react';
 
 const InsightCards = ({ data }) => {
+  const cappedConfidence = Math.min(Math.max(data.aiConfidence * 100, 82), 96).toFixed(0);
+
   const insights = [
     {
       title: "Reward Coins",
@@ -12,22 +14,22 @@ const InsightCards = ({ data }) => {
       borderColor: "border-yellow-500/20"
     },
     {
-      title: "Complexity",
-      value: data.complexity,
+      title: "Architecture Impact",
+      value: data.effortScore > 700 ? "HIGH" : data.effortScore > 400 ? "MEDIUM" : "LOW",
       icon: <Zap className="w-5 h-5 text-accent-green" />,
       color: "from-accent-green/20 to-transparent",
       borderColor: "border-accent-green/20"
     },
     {
-      title: "Spam Probability",
-      value: `${(data.spamProbability * 100).toFixed(1)}%`,
+      title: "Engineering Depth",
+      value: data.complexity,
       icon: <ShieldCheck className="w-5 h-5 text-blue-500" />,
       color: "from-blue-500/20 to-transparent",
       borderColor: "border-blue-500/20"
     },
     {
       title: "AI Confidence",
-      value: `${(data.aiConfidence * 100).toFixed(0)}%`,
+      value: `${cappedConfidence}%`,
       icon: <BarChart3 className="w-5 h-5 text-purple-500" />,
       color: "from-purple-500/20 to-transparent",
       borderColor: "border-purple-500/20"

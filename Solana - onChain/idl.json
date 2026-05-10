@@ -1,0 +1,414 @@
+{
+    "version": "0.1.0",
+    "name": "effortx",
+    "instructions": [
+        {
+            "name": "initializeProtocol",
+            "accounts": [
+                {
+                    "name": "admin",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "globalState",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "treasuryWallet",
+                    "type": "publicKey"
+                }
+            ]
+        },
+        {
+            "name": "createProfile",
+            "accounts": [
+                {
+                    "name": "user",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "userProfile",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "usernameIndex",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "globalState",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "githubUsername",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "submitProof",
+            "accounts": [
+                {
+                    "name": "user",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "userProfile",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "proofRecord",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "globalState",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "githubUrl",
+                    "type": "string"
+                },
+                {
+                    "name": "commitHash",
+                    "type": "string"
+                },
+                {
+                    "name": "commitHashSeed",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "effortScore",
+                    "type": "u64"
+                },
+                {
+                    "name": "rewardCoins",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "transferEcoins",
+            "accounts": [
+                {
+                    "name": "sender",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "senderProfile",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "receiverProfile",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "amount",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "buyEcoins",
+            "accounts": [
+                {
+                    "name": "user",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "userProfile",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "treasuryWallet",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "globalState",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "solAmount",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getProfile",
+            "accounts": [
+                {
+                    "name": "userProfile",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": []
+        },
+        {
+            "name": "getProof",
+            "accounts": [
+                {
+                    "name": "proofRecord",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": []
+        }
+    ],
+    "accounts": [
+        {
+            "name": "GlobalState",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "admin",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "treasuryWallet",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "totalUsers",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "totalProofs",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "bump",
+                        "type": "u8"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "UserProfile",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "wallet",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "githubUsername",
+                        "type": "string"
+                    },
+                    {
+                        "name": "totalXp",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "averageScore",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "totalProofs",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "ecoinBalance",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "ecoinEarned",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "createdAt",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "bump",
+                        "type": "u8"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "UsernameIndex",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "githubUsername",
+                        "type": "string"
+                    },
+                    {
+                        "name": "wallet",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "bump",
+                        "type": "u8"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ProofRecord",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "owner",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "githubUsername",
+                        "type": "string"
+                    },
+                    {
+                        "name": "githubUrl",
+                        "type": "string"
+                    },
+                    {
+                        "name": "commitHash",
+                        "type": "string"
+                    },
+                    {
+                        "name": "effortScore",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "rewardCoins",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "timestamp",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "proofNumber",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "bump",
+                        "type": "u8"
+                    }
+                ]
+            }
+        }
+    ],
+    "errors": [
+        {
+            "code": 6000,
+            "name": "UsernameTooLong",
+            "msg": "GitHub username exceeds the maximum allowed length of 32 bytes."
+        },
+        {
+            "code": 6001,
+            "name": "UrlTooLong",
+            "msg": "GitHub URL exceeds the maximum allowed length of 200 bytes."
+        },
+        {
+            "code": 6002,
+            "name": "CommitHashInvalid",
+            "msg": "Commit hash is invalid or exceeds 40 characters."
+        },
+        {
+            "code": 6003,
+            "name": "InvalidScore",
+            "msg": "Effort score must be greater than zero."
+        },
+        {
+            "code": 6004,
+            "name": "InvalidReward",
+            "msg": "Reward coins must be greater than zero."
+        },
+        {
+            "code": 6005,
+            "name": "InvalidAmount",
+            "msg": "Transfer amount must be greater than zero."
+        },
+        {
+            "code": 6006,
+            "name": "AmountTooSmall",
+            "msg": "SOL amount is too small to purchase even 1 ECOIN. Minimum is 1,000,000 lamports (0.001 SOL)."
+        },
+        {
+            "code": 6007,
+            "name": "InsufficientEcoinBalance",
+            "msg": "Insufficient ECOIN balance for this transfer."
+        },
+        {
+            "code": 6008,
+            "name": "CannotTransferToSelf",
+            "msg": "You cannot transfer ECOIN to yourself."
+        },
+        {
+            "code": 6009,
+            "name": "Unauthorized",
+            "msg": "Signer does not match the profile owner."
+        },
+        {
+            "code": 6010,
+            "name": "InvalidTreasury",
+            "msg": "Treasury wallet does not match the one stored in GlobalState."
+        },
+        {
+            "code": 6011,
+            "name": "Overflow",
+            "msg": "Arithmetic overflow occurred."
+        }
+    ]
+}
