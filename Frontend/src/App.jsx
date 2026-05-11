@@ -14,6 +14,7 @@ import { useSolana } from './context/SolanaContext.jsx';
 import { initializeProtocol } from './solana/program.js';
 import toast from 'react-hot-toast';
 import Dashboard from './components/Dashboard';
+import Playground from './components/Playground';
 
 function InitAdminButton() {
   const { isWalletConnected, wallet } = useSolana();
@@ -150,6 +151,15 @@ function AppContent() {
               Dashboard
             </button>
           )}
+          {isWalletConnected && profile && (
+            <button
+              onClick={() => setCurrentRoute('playground')}
+              className={`transition-colors font-bold flex items-center gap-2 ${currentRoute === 'playground' ? 'text-accent-blue' : 'hover:text-white'}`}
+            >
+              <span className="w-2 h-2 rounded-full bg-accent-blue animate-pulse"></span>
+              Playground
+            </button>
+          )}
           <button
             onClick={() => {
               if (currentRoute !== 'home') setCurrentRoute('home');
@@ -242,7 +252,7 @@ function AppContent() {
                 <HowItWorks />
               </div>
             </motion.div>
-          ) : (
+          ) : currentRoute === 'dashboard' ? (
             <motion.div
               key="dashboard"
               initial={{ opacity: 0, y: 10 }}
@@ -250,6 +260,15 @@ function AppContent() {
               exit={{ opacity: 0, y: -10 }}
             >
               <Dashboard />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="playground"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <Playground />
             </motion.div>
           )}
         </AnimatePresence>

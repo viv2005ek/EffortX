@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const analysisRoutes = require('./routes/analysisRoutes');
+const playgroundRoutes = require('./routes/playgroundRoutes');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(morgan('dev')); // Logging
 
 // Routes
 app.use('/api', analysisRoutes);
+app.use('/api/playground', playgroundRoutes);
 
 // Root route
 app.get('/', (req, res) => {
