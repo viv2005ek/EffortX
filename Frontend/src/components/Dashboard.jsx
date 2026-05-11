@@ -352,104 +352,191 @@ function StatsTab({ profile, userProofs }) {
 }
 
 function LeaderboardTab({ leaderboard, wallet }) {
+  const [mode, setMode] = useState('effort'); // 'effort' is now default
+
+  // ── ECOIN leaderboard: keep EXISTING order from context (already sorted) ──
+  const ecoinList = leaderboard; 
+
+  // ── Effort Score leaderboard: new sort, computed fresh with memoization ──
+  const effortList = useMemo(() => {
+    if (!leaderboard.length) return [];
+    const sorted = [...leaderboard].sort((a, b) => {
+      if (b.averageScore !== a.averageScore) return b.averageScore - a.averageScore; 
+      if (b.totalProofs !== a.totalProofs) return b.totalProofs - a.totalProofs;     
+      return b.totalXp - a.totalXp;                                                  
+    });
+    return sorted.map((u, i) => ({ ...u, effortRank: i + 1 }));
+  }, [leaderboard]);
+
+  // ── Simplified Quality labels ──
+  const getQualityLabel = (user) => {
+    if (user.averageScore >= 85 && user.totalProofs >= 5) return { label: 'Architect', color: 'text-accent-green border-accent-green/30 bg-accent-green/10' };
+    if (user.averageScore >= 75 && user.totalProofs >= 3) return { label: 'High Impact', color: 'text-accent-green/80 border-accent-green/20 bg-accent-green/5' };
+    if (user.totalProofs >= 8) return { label: 'Consistent', color: 'text-accent-green/70 border-accent-green/20 bg-accent-green/5' };
+    if (user.averageScore >= 65) return { label: 'Verified', color: 'text-accent-green/60 border-accent-green/10 bg-accent-green/5' };
+    return null;
+  };
+
+  const activeList = mode === 'ecoin' ? ecoinList : effortList;
+  const myWallet = wallet.publicKey?.toBase58();
+  const rankKey = mode === 'ecoin' ? 'globalRank' : 'effortRank';
+
   return (
     <div className="bg-[#161b22] rounded-[2rem] border border-[#30363d] overflow-hidden shadow-2xl relative">
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-[#3fb950]/40" />
-      
-      <div className="p-8 border-b border-[#30363d] relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="p-8 border-b border-[#30363d] relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h3 className="text-2xl font-black text-white flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-yellow-400/20 border border-yellow-400/30 flex items-center justify-center shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-              <Trophy className="w-5 h-5 text-yellow-400" />
-            </div>
-            Global Ecosystem Ranking
+            <Trophy className="w-6 h-6 text-yellow-400/80" />
+            {mode === 'effort' ? 'Contribution Leaderboard' : 'ECOIN Leaderboard'}
           </h3>
-          <p className="text-sm text-text-main/50 mt-2 ml-1">Ranked deterministically by ECOIN balance, XP, and age.</p>
+          <p className="text-sm text-text-main/40 mt-1 font-medium">
+            {mode === 'effort' 
+              ? 'Ranked by engineering quality and proof consistency.' 
+              : 'Ranked by ECOIN holdings and community XP.'}
+          </p>
+        </div>
+
+        {/* ── Refined Toggle ── */}
+        <div className="relative flex items-center p-1 rounded-xl bg-black/20 border border-[#30363d] w-fit">
+          <motion.div
+            layout
+            layoutId="leaderboardModePill"
+            transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+            className="absolute top-1 h-[calc(100%-8px)] rounded-lg bg-[#30363d] shadow-sm"
+            style={{ 
+              left: mode === 'effort' ? '4px' : 'auto',
+              right: mode === 'ecoin' ? '4px' : 'auto',
+              width: 'calc(50% - 4px)'
+            }}
+          />
+
+          <button
+            onClick={() => setMode('effort')}
+            className={`relative z-10 px-6 py-2 text-xs font-bold transition-colors ${
+              mode === 'effort' ? 'text-white' : 'text-text-main/40 hover:text-text-main/60'
+            }`}
+          >
+            Effort Score
+          </button>
+          <button
+            onClick={() => setMode('ecoin')}
+            className={`relative z-10 px-6 py-2 text-xs font-bold transition-colors ${
+              mode === 'ecoin' ? 'text-white' : 'text-text-main/40 hover:text-text-main/60'
+            }`}
+          >
+            ECOIN
+          </button>
         </div>
       </div>
-      
-      <div className="overflow-x-auto relative z-10">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-[#30363d] text-xs text-text-main/40 uppercase tracking-widest font-bold bg-black/20">
-              <th className="p-5 pl-8">Rank</th>
-              <th className="p-5">Developer</th>
-              <th className="p-5">ECOIN</th>
-              <th className="p-5">XP</th>
-              <th className="p-5">Avg Score</th>
-              <th className="p-5 pr-8 text-right">Proofs</th>
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence>
-              {leaderboard.map((user, i) => {
-                const isMe = user.wallet === wallet.publicKey?.toBase58();
-                
+
+      {/* Table */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={mode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-x-auto"
+        >
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="text-[10px] text-text-main/30 uppercase tracking-widest font-black bg-black/10 border-b border-[#30363d]">
+                <th className="p-6 pl-8 w-24">Rank</th>
+                <th className="p-6">Developer</th>
+                {mode === 'effort' ? (
+                  <>
+                    <th className="p-6">Quality Score</th>
+                    <th className="p-6">Proofs</th>
+                    <th className="p-6 pr-8 text-right">Badge</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="p-6">Balance</th>
+                    <th className="p-6">XP</th>
+                    <th className="p-6 pr-8 text-right">Proofs</th>
+                  </>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {activeList.map((user, i) => {
+                const isMe = user.wallet === myWallet;
+                const rank = user[rankKey];
+                const badge = mode === 'effort' ? getQualityLabel(user) : null;
+                const isTop3 = rank <= 3;
+
                 return (
-                  <motion.tr 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    key={user.wallet} 
-                    className={`border-b border-[#30363d] hover:bg-[#30363d] transition-colors group ${
-                      isMe ? 'bg-accent-green/5' : ''
+                  <tr
+                    key={`${user.wallet}-${mode}`}
+                    className={`border-b border-[#30363d]/50 transition-colors ${
+                      isMe ? 'bg-accent-green/[0.03]' : 'hover:bg-white/[0.02]'
                     }`}
                   >
-                    <td className="p-5 pl-8">
-                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-xl font-black text-sm shadow-sm ${
-                        user.globalRank === 1 ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30 shadow-[0_0_10px_rgba(250,204,21,0.3)]' :
-                        user.globalRank === 2 ? 'bg-gray-300/10 text-gray-300 border border-gray-300/30' :
-                        user.globalRank === 3 ? 'bg-amber-600/10 text-amber-500 border border-amber-600/30' :
-                        'bg-black/30 text-text-main/40 border border-[#30363d]'
+                    <td className="p-6 pl-8">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border ${
+                        rank === 1 ? 'border-yellow-400/30 text-yellow-400 bg-yellow-400/5 shadow-[0_0_10px_rgba(250,204,21,0.1)]' :
+                        rank === 2 ? 'border-gray-400/30 text-gray-300 bg-gray-400/5' :
+                        rank === 3 ? 'border-amber-700/30 text-amber-600 bg-amber-700/5' :
+                        'border-transparent text-text-main/30'
                       }`}>
-                        {user.globalRank}
-                      </span>
+                        {rank}
+                      </div>
                     </td>
-                    <td className="p-5">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm border ${
-                          isMe ? 'bg-accent-green/20 border-accent-green/30 text-accent-green' : 'bg-[#30363d] border-[#30363d]'
+
+                    <td className="p-6">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs border ${
+                          isMe ? 'bg-accent-green/10 border-accent-green/20 text-accent-green' : 'bg-[#30363d]/50 border-[#30363d] text-white/70'
                         }`}>
                           {user.githubUsername[0].toUpperCase()}
                         </div>
-                        <div>
-                          <p className={`font-black text-sm flex items-center gap-2 ${isMe ? 'text-accent-green' : 'text-white group-hover:text-accent-green transition-colors'}`}>
-                            @{user.githubUsername}
-                            {isMe && <span className="text-[9px] px-2 py-0.5 rounded-md bg-accent-green/20 text-accent-green uppercase font-bold border border-accent-green/30">You</span>}
-                          </p>
-                          <p className="text-[10px] text-text-main/40 font-mono mt-1 bg-black/30 px-1.5 py-0.5 rounded inline-block">
-                            {user.wallet.slice(0,4)}...{user.wallet.slice(-4)}
-                          </p>
-                        </div>
+                        <span className={`font-bold text-sm ${isMe ? 'text-accent-green' : 'text-white/90'}`}>
+                          @{user.githubUsername}
+                        </span>
                       </div>
                     </td>
-                    <td className="p-5">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-accent-green/10 border border-accent-green/20 text-accent-green font-black text-sm">
-                        {user.ecoinBalance.toLocaleString()} <Coins className="w-3.5 h-3.5" />
-                      </div>
-                    </td>
-                    <td className="p-5 text-white/90 font-bold text-sm">
-                      {user.totalXp.toLocaleString()}
-                    </td>
-                    <td className="p-5 text-blue-400 font-bold text-sm">
-                      {user.averageScore}
-                    </td>
-                    <td className="p-5 pr-8 text-right text-text-main/60 text-sm font-bold">
-                      {user.totalProofs}
-                    </td>
-                  </motion.tr>
+
+                    {mode === 'effort' ? (
+                      <>
+                        <td className="p-6">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-accent-green/5 text-accent-green font-bold text-xs">
+                            {user.averageScore}
+                          </div>
+                        </td>
+                        <td className="p-6 text-sm text-white/60 font-bold">{user.totalProofs}</td>
+                        <td className="p-6 pr-8 text-right">
+                          {badge ? (
+                            <span className={`text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-wider ${badge.color}`}>
+                              {badge.label}
+                            </span>
+                          ) : <span className="text-text-main/10 text-[9px] font-black uppercase tracking-wider">—</span>}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="p-6">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-accent-green/5 text-accent-green font-bold text-xs">
+                            {user.ecoinBalance.toLocaleString()}
+                          </div>
+                        </td>
+                        <td className="p-6 text-sm text-white/60 font-bold">{user.totalXp.toLocaleString()}</td>
+                        <td className="p-6 pr-8 text-right text-text-main/40 text-sm font-bold">{user.totalProofs}</td>
+                      </>
+                    )}
+                  </tr>
                 );
               })}
-            </AnimatePresence>
-          </tbody>
-        </table>
-        {leaderboard.length === 0 && (
-          <div className="p-16 text-center text-text-main/40 font-medium">No profiles registered on the network yet.</div>
-        )}
-      </div>
+            </tbody>
+          </table>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
+
+
 
 function ProofsTab({ proofs, onSelectProof }) {
   if (proofs.length === 0) {
@@ -499,7 +586,7 @@ function ProofsTab({ proofs, onSelectProof }) {
             <div className="flex gap-6 relative z-10 p-5 rounded-2xl bg-black/30 border border-[#30363d]">
               <div>
                 <p className="text-[10px] text-text-main/50 uppercase tracking-widest font-bold mb-1.5">Effort Score</p>
-                <p className="text-2xl font-black text-blue-400">{proof.effortScore}</p>
+                <p className="text-2xl font-black text-accent-green">{proof.effortScore}</p>
               </div>
               <div className="w-px h-10 bg-white/10 my-auto" />
               <div>

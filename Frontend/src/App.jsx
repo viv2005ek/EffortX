@@ -120,6 +120,7 @@ function AppContent() {
     scrollToAnalyzer();
   };
 
+  // Reorder buttons and fix scrolling
   return (
     <div className="min-h-screen bg-background text-text-main font-sans selection:bg-accent-green/30 selection:text-white">
 
@@ -143,38 +144,48 @@ function AppContent() {
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-main/70">
-          {isWalletConnected && profile && (
-            <button
-              onClick={() => setCurrentRoute('dashboard')}
-              className={`transition-colors cursor-pointer ${currentRoute === 'dashboard' ? 'text-white' : 'hover:text-white'}`}
-            >
-              Dashboard
-            </button>
-          )}
-          {isWalletConnected && profile && (
-            <button
-              onClick={() => setCurrentRoute('playground')}
-              className={`transition-colors cursor-pointer font-bold flex items-center gap-2 ${currentRoute === 'playground' ? 'text-accent-green' : 'hover:text-white'}`}
-            >
-              <span className="w-2 h-2 rounded-full bg-accent-green animate-pulse"></span>
-              AI Playground
-            </button>
-          )}
           <button
             onClick={() => {
               if (currentRoute !== 'home') setCurrentRoute('home');
               setTimeout(scrollToAnalyzer, 100);
             }}
-            className="hover:text-white transition-colors cursor-pointer"
+            className={`transition-colors cursor-pointer ${currentRoute === 'home' ? 'text-white font-bold' : 'hover:text-white'}`}
           >
             Analyze
           </button>
+
+          {isWalletConnected && profile && (
+            <button
+              onClick={() => {
+                setCurrentRoute('dashboard');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`transition-colors cursor-pointer ${currentRoute === 'dashboard' ? 'text-white font-bold' : 'hover:text-white'}`}
+            >
+              Dashboard
+            </button>
+          )}
+
+          {isWalletConnected && profile && (
+            <button
+              onClick={() => {
+                setCurrentRoute('playground');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`transition-colors cursor-pointer flex items-center gap-2 ${currentRoute === 'playground' ? 'text-accent-green font-bold' : 'hover:text-white'}`}
+            >
+              <span className={`w-2 h-2 rounded-full bg-accent-green ${currentRoute === 'playground' ? 'animate-pulse' : 'opacity-50'}`}></span>
+              AI Playground
+            </button>
+          )}
+
           {currentRoute === 'home' && !isWalletConnected && (
             <>
               <a href="#about" className="hover:text-white transition-colors cursor-pointer">About EffortX</a>
               <a href="#how-it-works" className="hover:text-white transition-colors cursor-pointer">How It Works</a>
             </>
           )}
+
 
 
 

@@ -389,6 +389,8 @@ export function parseBlockchainError(err) {
     return 'Insufficient SOL balance for this transaction.';
   if (msg.includes('Account does not exist') || msg.includes('Failed to find'))
     return 'Account not found. Please create your profile first.';
+  if (msg.includes('WalletNotConnectedError'))
+    return 'Wallet session expired or disconnected. Please reconnect.';
 
   return 'Transaction failed. Please try again.';
 }

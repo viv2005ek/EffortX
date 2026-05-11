@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSolana } from '../context/SolanaContext';
-import { transferEcoins } from '../solana/program';
 import { estimatePlaygroundTokens, chatWithPlayground } from '../services/api';
+import { transferEcoins, parseBlockchainError } from '../solana/program';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import toast from 'react-hot-toast';
 
 // The admin wallet that receives the ECOIN payments
@@ -59,6 +61,10 @@ export default function Playground() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading || isTransferring) return;
+    if (!isWalletConnected || !wallet || !wallet.publicKey || !wallet.connected) {
+      toast.error("Wallet disconnected. Please reconnect.");
+      return;
+    }
 
     const currentInput = input;
     setInput('');
@@ -96,7 +102,8 @@ export default function Playground() {
         refreshProfile();
       } catch (txError) {
         console.error("Transfer error:", txError);
-        toast.error("ECOIN transfer failed. Message not sent.", { id: toastId });
+        const readableError = parseBlockchainError(txError);
+        toast.error(readableError, { id: toastId });
         setIsTransferring(false);
         setMessages(messages); // rollback message
         setInput(currentInput);
@@ -127,6 +134,10 @@ export default function Playground() {
     }
   };
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   if (!isWalletConnected || !profile) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
@@ -139,8 +150,8 @@ export default function Playground() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 pb-20">
-      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
+    <div className="max-w-5xl mx-auto px-6 pb-12">
+      <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">AI Playground</h1>
           <p className="text-accent-green/80 mt-1 font-bold text-sm uppercase tracking-widest">Premium developer AI tooling powered by your on-chain reputation.</p>
@@ -184,7 +195,8 @@ export default function Playground() {
         </div>
 
         {/* Chat Area */}
-        <div className="lg:col-span-3 flex flex-col h-[600px] bg-[#0d1117] border border-[#30363d] rounded-[2rem] overflow-hidden shadow-sm relative group">
+        <div className="lg:col-span-3 flex flex-col h-[500px] bg-[#0d1117] border border-[#30363d] rounded-[2rem] overflow-hidden shadow-sm relative group">
+
           <div className="absolute inset-0 bg-gradient-to-b from-[#3fb950]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
           <div className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
             {messages.length === 0 && (
@@ -208,13 +220,44 @@ export default function Playground() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div 
-                    className={`max-w-[85%] rounded-2xl px-5 py-3 ${
+                    className={`max-w-[90%] rounded-2xl px-5 py-3 ${
                       msg.role === 'user' 
                         ? 'bg-accent-green text-black font-medium' 
-                        : 'bg-white/10 text-white'
+                        : 'bg-white/10 text-white border border-white/5'
                     }`}
                   >
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</div>
+                    <div className="text-sm leading-relaxed markdown-content">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                          h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-2" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-md font-bold mb-1" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-2" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                          li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-black text-white" {...props} />,
+                          em: ({node, ...props}) => <em className="italic text-white/90" {...props} />,
+                          code: ({node, inline, ...props}) => 
+                            inline 
+                              ? <code className="bg-white/10 px-1.5 py-0.5 rounded text-accent-green font-mono text-[10px]" {...props} />
+                              : <pre className="bg-black/40 p-4 rounded-xl my-3 overflow-x-auto border border-white/5"><code className="text-xs font-mono text-accent-green" {...props} /></pre>,
+                          table: ({node, ...props}) => (
+                            <div className="overflow-x-auto my-4">
+                              <table className="min-w-full border border-white/10 rounded-lg overflow-hidden" {...props} />
+                            </div>
+                          ),
+                          thead: ({node, ...props}) => <thead className="bg-white/5" {...props} />,
+                          th: ({node, ...props}) => <th className="px-4 py-2 border-b border-white/10 text-left text-xs font-bold uppercase tracking-wider" {...props} />,
+                          td: ({node, ...props}) => <td className="px-4 py-2 border-b border-white/5 text-sm" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-accent-green/30 pl-4 italic my-2 text-white/70" {...props} />,
+                          a: ({node, ...props}) => <a className="text-accent-green hover:underline" {...props} target="_blank" rel="noopener noreferrer" />,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </motion.div>
               ))}
