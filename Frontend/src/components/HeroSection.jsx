@@ -1,54 +1,202 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 
-const HeroSection = ({ onScrollToAnalyzer }) => {
+const TiltCard = ({ children }) => {
+  const ref = useRef(null);
+  
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
   return (
-    <section className="relative min-h-[70vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
-      {/* Animated Background Grid */}
-      <div className="absolute inset-0 animated-grid pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0D1117]/50 to-[#0D1117] pointer-events-none" />
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="relative w-full max-w-4xl mx-auto z-10"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const HeroSection = ({ onScrollToAnalyzer, onOpenPlayground }) => {
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 500], [0, 50]);
+  const opacity1 = useTransform(scrollY, [0, 600, 1000], [1, 1, 0]);
+
+  return (
+    <section className="relative min-h-screen flex flex-col items-center text-center px-4 pt-40 pb-24 overflow-visible">
+      {/* Background & Grid */}
+      <div className="absolute inset-0 bg-[#0d1117]" />
       
-      {/* Glowing Accents */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent-green/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-green/5 rounded-full blur-[150px] pointer-events-none" />
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-30"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #30363d 1px, transparent 1px),
+            linear-gradient(to bottom, #30363d 1px, transparent 1px)
+          `,
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(ellipse at center, black 20%, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 20%, transparent 70%)'
+        }}
+      />
+      
+      {/* Top Ambient Glow - strict green */}
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-accent-green/10 blur-[150px] rounded-full pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 max-w-4xl"
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-20 max-w-5xl mx-auto flex flex-col items-center w-full"
       >
-        <div className="flex items-center justify-center mb-6">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="px-4 py-1 rounded-full border border-accent-green/30 bg-accent-green/5 text-accent-green text-sm font-semibold tracking-wide"
-          >
-            BETA v1.0
-          </motion.div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="mb-10"
+        >
+          <div className="group relative inline-flex items-center justify-center cursor-pointer">
+            <div className="absolute inset-0 bg-accent-green/20 rounded-full blur-md transition-opacity duration-500 opacity-0 group-hover:opacity-100"></div>
+            <div className="relative px-5 py-2 rounded-full border border-[#30363d] bg-[#161b22] text-[13px] font-semibold tracking-wide text-[#c9d1d9] flex items-center gap-3 transition-all hover:border-accent-green/50 hover:text-white shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-accent-green shadow-[0_0_8px_#2ea043] animate-pulse"></span>
+              EffortX Mainnet Beta
+            </div>
+          </div>
+        </motion.div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold text-heading tracking-tight mb-6 leading-tight">
-          Effort<span className="text-accent-green">X</span>
+        <h1 className="text-5xl md:text-[80px] lg:text-[96px] font-extrabold tracking-tighter mb-8 leading-[1.05] text-white">
+          Verify Real Developer<br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#3fb950] to-[#238636]">Contribution.</span>
         </h1>
         
-        <p className="text-2xl md:text-3xl font-medium text-white mb-4 tracking-tight">
-          AI-Powered Infrastructure for Developer Reputation
-        </p>
-        
-        <p className="text-lg text-text-main/60 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Move beyond commit counts. EffortX analyzes the architectural depth and engineering impact of your work using Gemini AI to generate verifiable proof of quality.
+        <p className="text-lg md:text-xl text-[#8b949e] max-w-3xl mx-auto mb-12 leading-relaxed font-medium">
+          GitHub tracks commits. EffortX analyzes what actually changed. <br/> AI-powered, on-chain proof of engineering quality built on Solana.
         </p>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onScrollToAnalyzer}
-          className="px-10 py-4 bg-accent-green text-white font-bold rounded-xl shadow-glow hover:bg-[#3fb950] transition-all duration-300 text-lg"
+        <motion.div 
+          className="flex flex-col sm:flex-row gap-5 items-center justify-center w-full sm:w-auto mb-24"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
         >
-          Analyze Commit
-        </motion.button>
+          <button
+            onClick={onScrollToAnalyzer}
+            className="group relative px-8 py-4 bg-[#238636] hover:bg-[#2ea043] text-white font-semibold rounded-xl overflow-hidden transition-all duration-300 text-[16px] flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(46,160,67,0.15)] hover:shadow-[0_0_30px_rgba(46,160,67,0.3)] border border-[#3fb950]/30 w-full sm:w-auto"
+          >
+            Analyze Commit
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={onOpenPlayground}
+            className="px-8 py-4 bg-[#161b22] hover:bg-[#21262d] text-[#c9d1d9] hover:text-white font-semibold rounded-xl transition-all duration-300 text-[16px] flex items-center justify-center border border-[#30363d] w-full sm:w-auto shadow-sm cursor-pointer"
+          >
+            Open Playground
+          </button>
+        </motion.div>
+        
+        {/* Premium 3D Isometric Element */}
+        <motion.div 
+          style={{ y: y1, opacity: opacity1, perspective: 1000 }}
+          className="w-full relative z-30"
+        >
+          <TiltCard>
+            {/* Glowing backdrop shadow for 3D depth */}
+            <div 
+              className="absolute -inset-4 bg-accent-green/20 blur-[100px] rounded-3xl pointer-events-none" 
+              style={{ transform: 'translateZ(-20px)' }}
+            />
+
+            <div 
+              className="relative bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(48,54,61,0.5)] overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center px-4 py-3 border-b border-[#30363d] bg-[#161b22]">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#30363d]" />
+                  <div className="w-3 h-3 rounded-full bg-[#30363d]" />
+                  <div className="w-3 h-3 rounded-full bg-[#30363d]" />
+                </div>
+                <div className="mx-auto text-[13px] font-mono font-medium text-[#8b949e]">Analyzer Engine</div>
+                <div className="w-12"></div>
+              </div>
+              
+              {/* Code Body */}
+              <div className="p-8 text-left font-mono text-[14px] leading-loose text-[#c9d1d9] overflow-x-auto bg-[#0d1117]">
+                <div className="flex">
+                  <span className="text-[#484f58] w-10 select-none text-right pr-4 border-r border-[#30363d] mr-4">1</span>
+                  <span><span className="text-[#ff7b72]">import</span> &#123; <span className="text-[#d2a8ff]">EffortEngine</span> &#125; <span className="text-[#ff7b72]">from</span> <span className="text-[#a5d6ff]">'@effortx/core'</span>;</span>
+                </div>
+                <div className="flex">
+                  <span className="text-[#484f58] w-10 select-none text-right pr-4 border-r border-[#30363d] mr-4">2</span>
+                  <span></span>
+                </div>
+                <div className="flex">
+                  <span className="text-[#484f58] w-10 select-none text-right pr-4 border-r border-[#30363d] mr-4">3</span>
+                  <span><span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">engine</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#ff7b72]">new</span> <span className="text-[#d2a8ff]">EffortEngine</span>();</span>
+                </div>
+                <div className="flex">
+                  <span className="text-[#484f58] w-10 select-none text-right pr-4 border-r border-[#30363d] mr-4">4</span>
+                  <span><span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">proof</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#ff7b72]">await</span> engine.<span className="text-[#d2a8ff]">analyzeCommit</span>(<span className="text-[#a5d6ff]">'c4f3b2a'</span>);</span>
+                </div>
+                <div className="flex">
+                  <span className="text-[#484f58] w-10 select-none text-right pr-4 border-r border-[#30363d] mr-4">5</span>
+                  <span></span>
+                </div>
+                <div className="flex relative items-center">
+                  <span className="text-[#484f58] w-10 select-none text-right pr-4 border-r border-[#30363d] mr-4">6</span>
+                  <span className="text-[#8b949e] italic">// Proof generated and secured on Solana</span>
+                  
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9, x: -20 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    transition={{ delay: 1, duration: 0.6, type: "spring" }}
+                    className="ml-6 px-3 py-1 rounded-lg text-[12px] font-sans font-bold bg-accent-green/10 text-accent-green border border-accent-green/30 shadow-[0_0_15px_rgba(46,160,67,0.15)] flex items-center gap-2"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
+                    Verified Score: 98
+                  </motion.div>
+                </div>
+              </div>
+              
+              {/* Subtle top reflection */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none h-[40%]" />
+            </div>
+          </TiltCard>
+        </motion.div>
       </motion.div>
     </section>
   );

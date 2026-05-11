@@ -60,7 +60,7 @@ export default function CreateProfileModal({ isOpen, onClose }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/70 "
             onClick={!loading ? onClose : undefined}
           />
 
@@ -72,7 +72,7 @@ export default function CreateProfileModal({ isOpen, onClose }) {
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="pointer-events-auto w-full max-w-md glass-card rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+            <div className="pointer-events-auto w-full max-w-md bg-[#161b22] rounded-3xl border border-[#30363d] shadow-2xl overflow-hidden">
               {/* Top accent line */}
               <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-accent-green to-transparent" />
 
@@ -91,7 +91,7 @@ export default function CreateProfileModal({ isOpen, onClose }) {
                   {!loading && (
                     <button
                       onClick={onClose}
-                      className="p-1.5 rounded-lg hover:bg-white/5 text-text-main/40 hover:text-white transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-[#30363d] text-text-main/40 hover:text-white transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -151,7 +151,7 @@ export default function CreateProfileModal({ isOpen, onClose }) {
                           placeholder="your-github-username"
                           maxLength={32}
                           disabled={loading}
-                          className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-text-main/25 focus:outline-none focus:border-accent-green/50 transition-all text-sm font-mono disabled:opacity-50"
+                          className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-[#30363d] border border-[#30363d] text-white placeholder:text-text-main/25 focus:outline-none focus:border-accent-green/50 transition-all text-sm font-mono disabled:opacity-50"
                           autoFocus
                         />
                       </div>
@@ -169,7 +169,7 @@ export default function CreateProfileModal({ isOpen, onClose }) {
                       className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
                         isValidUsername && !loading
                           ? 'bg-accent-green text-white shadow-glow hover:bg-[#3fb950]'
-                          : 'bg-white/5 text-text-main/30 cursor-not-allowed'
+                          : 'bg-[#30363d] text-text-main/30 cursor-not-allowed'
                       }`}
                     >
                       {loading ? (

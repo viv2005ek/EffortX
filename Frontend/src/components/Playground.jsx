@@ -140,21 +140,21 @@ export default function Playground() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 pb-20">
-      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-6">
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">AI Playground</h1>
-          <p className="text-text-main/60 mt-1">Premium developer AI tooling powered by your on-chain reputation.</p>
+          <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">AI Playground</h1>
+          <p className="text-accent-green/80 mt-1 font-bold text-sm uppercase tracking-widest">Premium developer AI tooling powered by your on-chain reputation.</p>
         </div>
         
-        <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4">
+        <div className="flex items-center gap-4 bg-[#161b22] border border-[#30363d] rounded-xl p-4 shadow-sm">
           <div className="text-sm">
-            <div className="text-text-main/60">Balance</div>
-            <div className="font-bold text-accent-green">{profile.ecoinBalance} ECOIN</div>
+            <div className="text-text-main/60 uppercase tracking-widest text-[10px] font-black">Balance</div>
+            <div className="font-bold text-accent-green text-lg drop-shadow-md">{profile.ecoinBalance} ECOIN</div>
           </div>
           <div className="w-px h-8 bg-white/10"></div>
           <div className="text-sm">
-            <div className="text-text-main/60">Est. Cost</div>
-            <div className="font-bold text-white">{estimatedCost || '-'} ECOIN</div>
+            <div className="text-text-main/60 uppercase tracking-widest text-[10px] font-black">Est. Cost</div>
+            <div className="font-bold text-white text-lg">{estimatedCost || '-'} ECOIN</div>
           </div>
         </div>
       </div>
@@ -181,17 +181,12 @@ export default function Playground() {
             ))}
           </div>
 
-          <div className="mt-8 p-4 bg-accent-blue/10 border border-accent-blue/20 rounded-xl">
-            <h4 className="text-xs font-bold text-accent-blue uppercase mb-2">Temporary Session</h4>
-            <p className="text-xs text-text-main/70">
-              Chats are ephemeral and not stored on-chain or off-chain. Refreshing will clear the context.
-            </p>
-          </div>
         </div>
 
         {/* Chat Area */}
-        <div className="lg:col-span-3 flex flex-col h-[600px] bg-card-bg/50 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="lg:col-span-3 flex flex-col h-[600px] bg-[#0d1117] border border-[#30363d] rounded-[2rem] overflow-hidden shadow-sm relative group">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#3fb950]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                 <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4">
@@ -227,8 +222,8 @@ export default function Playground() {
 
             {isTransferring && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                <div className="bg-white/5 border border-accent-blue/30 text-accent-blue rounded-2xl px-5 py-3 text-sm flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-accent-blue/30 border-t-accent-blue rounded-full animate-spin"></div>
+                <div className="bg-[#161b22] border border-[#3fb950]/30 text-accent-green rounded-2xl px-5 py-3 text-sm flex items-center gap-3 font-bold shadow-sm">
+                  <div className="w-4 h-4 border-2 border-[#3fb950]/30 border-t-accent-green rounded-full animate-spin"></div>
                   Transferring ECOIN...
                 </div>
               </motion.div>
@@ -247,20 +242,20 @@ export default function Playground() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 bg-background/50 border-t border-white/5">
-            <form onSubmit={handleSubmit} className="relative">
+          <div className="p-4 bg-[#0d1117] border-t border-[#30363d] relative z-10">
+            <form onSubmit={handleSubmit} className="relative group/input">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask Gemini anything..."
                 disabled={isLoading || isTransferring}
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-4 text-white placeholder-text-main/30 focus:outline-none focus:border-accent-green/50 transition-colors disabled:opacity-50"
+                className="w-full bg-[#161b22] border border-[#30363d] rounded-2xl pl-6 pr-14 py-5 text-[#c9d1d9] placeholder:text-[#8b949e] focus:outline-none focus:border-[#3fb950]/50 transition-all duration-300 group-hover/input:border-[#8b949e]/50 font-mono text-sm shadow-inner disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading || isTransferring}
-                className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-white/10 hover:bg-accent-green hover:text-black rounded-lg text-white transition-all disabled:opacity-50 disabled:hover:bg-white/10 disabled:hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-[#30363d]/50 hover:bg-[#3fb950] hover:text-white rounded-xl text-[#c9d1d9] transition-all duration-300 disabled:opacity-50 disabled:hover:bg-[#30363d]/50"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

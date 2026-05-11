@@ -50,7 +50,7 @@ export default function WalletButton() {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => setVisible(true)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-accent-green/10 hover:border-accent-green/30 text-white text-sm font-bold transition-all duration-200"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#30363d] border border-[#30363d] hover:bg-accent-green/10 hover:border-accent-green/30 text-white text-sm font-bold transition-all duration-200"
       >
         <Wallet className="w-4 h-4 text-accent-green" />
         Connect Wallet
@@ -65,7 +65,7 @@ export default function WalletButton() {
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => setMenuOpen((o) => !o)}
-        className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-white/5 border border-accent-green/30 hover:bg-accent-green/10 text-white text-sm font-bold transition-all duration-200"
+        className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-[#30363d] border border-accent-green/30 hover:bg-accent-green/10 text-white text-sm font-bold transition-all duration-200"
       >
         {/* Online dot */}
         <span className="relative flex h-2 w-2">
@@ -94,10 +94,10 @@ export default function WalletButton() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-64 glass-card rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-64 bg-[#161b22] rounded-2xl border border-[#30363d] shadow-2xl z-50 overflow-hidden"
           >
             {/* Profile header */}
-            <div className="px-4 pt-4 pb-3 border-b border-white/5">
+            <div className="px-4 pt-4 pb-3 border-b border-[#30363d]">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-accent-green/20 border border-accent-green/30 flex items-center justify-center">
                   <Wallet className="w-4 h-4 text-accent-green" />
@@ -124,7 +124,7 @@ export default function WalletButton() {
             <div className="py-2">
               <button
                 onClick={handleCopy}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-main/70 hover:text-white hover:bg-white/5 transition-all"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-main/70 hover:text-white hover:bg-[#30363d] transition-all"
               >
                 {copied ? (
                   <CheckCheck className="w-4 h-4 text-accent-green" />
@@ -138,14 +138,14 @@ export default function WalletButton() {
                 href={explorerAccountUrl(wallet.publicKey?.toBase58())}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-main/70 hover:text-white hover:bg-white/5 transition-all"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-text-main/70 hover:text-white hover:bg-[#30363d] transition-all"
                 onClick={() => setMenuOpen(false)}
               >
                 <ExternalLink className="w-4 h-4" />
                 View on Explorer
               </a>
 
-              <div className="my-1.5 border-t border-white/5" />
+              <div className="my-1.5 border-t border-[#30363d]" />
 
               <button
                 onClick={handleDisconnect}

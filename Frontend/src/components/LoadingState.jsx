@@ -24,7 +24,7 @@ const LoadingState = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D1117]/90 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D1117]/90 ">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

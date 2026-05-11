@@ -58,18 +58,18 @@ const HowItWorks = () => {
                 transition={{ delay: index * 0.1 }}
                 className="flex flex-col items-center text-center group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-[#161B22] border border-white/10 flex items-center justify-center mb-6 group-hover:border-accent-green/50 transition-all shadow-lg group-hover:shadow-accent-green/10">
+                <div className="w-16 h-16 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-center mb-6 group-hover:border-[#3fb950]/50 transition-all shadow-inner">
                   <div className="text-accent-green">
                     {step.icon}
                   </div>
                 </div>
                 <h4 className="text-lg font-bold text-white mb-2">{step.title}</h4>
-                <p className="text-sm text-text-main/40 leading-relaxed px-4">
+                <p className="text-[14px] text-[#8b949e] leading-relaxed px-4 font-medium">
                   {step.description}
                 </p>
 
                 {/* Step Number Badge */}
-                <div className="mt-4 px-3 py-1 rounded-full bg-white/5 text-[10px] font-black text-text-main/30 border border-white/5 uppercase tracking-tighter">
+                <div className="mt-5 px-3 py-1 rounded-full bg-[#161b22] text-[11px] font-bold text-[#c9d1d9] border border-[#30363d] uppercase tracking-wider group-hover:border-[#3fb950]/30 group-hover:text-white transition-all">
                   Step {index + 1}
                 </div>
               </motion.div>

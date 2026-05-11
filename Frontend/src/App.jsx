@@ -142,11 +142,11 @@ function AppContent() {
           </span>
         </div>
 
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-main/60">
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-main/70">
           {isWalletConnected && profile && (
             <button
               onClick={() => setCurrentRoute('dashboard')}
-              className={`transition-colors font-bold ${currentRoute === 'dashboard' ? 'text-accent-green' : 'hover:text-white'}`}
+              className={`transition-colors cursor-pointer ${currentRoute === 'dashboard' ? 'text-white' : 'hover:text-white'}`}
             >
               Dashboard
             </button>
@@ -154,10 +154,10 @@ function AppContent() {
           {isWalletConnected && profile && (
             <button
               onClick={() => setCurrentRoute('playground')}
-              className={`transition-colors font-bold flex items-center gap-2 ${currentRoute === 'playground' ? 'text-accent-blue' : 'hover:text-white'}`}
+              className={`transition-colors cursor-pointer font-bold flex items-center gap-2 ${currentRoute === 'playground' ? 'text-accent-green' : 'hover:text-white'}`}
             >
-              <span className="w-2 h-2 rounded-full bg-accent-blue animate-pulse"></span>
-              Playground
+              <span className="w-2 h-2 rounded-full bg-accent-green animate-pulse"></span>
+              AI Playground
             </button>
           )}
           <button
@@ -165,20 +165,20 @@ function AppContent() {
               if (currentRoute !== 'home') setCurrentRoute('home');
               setTimeout(scrollToAnalyzer, 100);
             }}
-            className="hover:text-white transition-colors"
+            className="hover:text-white transition-colors cursor-pointer"
           >
             Analyze
           </button>
           {currentRoute === 'home' && !isWalletConnected && (
             <>
-              <a href="#about" className="hover:text-white transition-colors">About EffortX</a>
-              <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+              <a href="#about" className="hover:text-white transition-colors cursor-pointer">About EffortX</a>
+              <a href="#how-it-works" className="hover:text-white transition-colors cursor-pointer">How It Works</a>
             </>
           )}
 
 
 
-          <a href="https://github.com/viv2005ek/EffortX" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+          <a href="https://github.com/viv2005ek/EffortX" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors cursor-pointer">GitHub</a>
 
           <WalletButton />
 
@@ -216,7 +216,7 @@ function AppContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <HeroSection onScrollToAnalyzer={scrollToAnalyzer} />
+              <HeroSection onScrollToAnalyzer={scrollToAnalyzer} onOpenPlayground={() => setCurrentRoute('playground')} />
 
               <div className="pb-40">
                 <AnalyzerForm onAnalyze={handleAnalyze} isLoading={isLoading} />

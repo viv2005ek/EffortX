@@ -51,13 +51,13 @@ const AboutSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="glass-card p-8 rounded-3xl border border-white/5 hover:border-accent-green/30 transition-all group"
+              className="bg-[#161b22] p-8 rounded-2xl border border-[#30363d] hover:border-[#3fb950]/50 transition-all group shadow-sm"
             >
-              <div className="p-3 rounded-2xl bg-accent-green/10 w-fit mb-6 group-hover:bg-accent-green/20 transition-all">
+              <div className="p-3 rounded-xl bg-[#0d1117] border border-[#30363d] w-fit mb-6 group-hover:border-[#3fb950]/30 transition-all shadow-inner">
                 {feature.icon}
               </div>
               <h4 className="text-xl font-bold text-white mb-3">{feature.title}</h4>
-              <p className="text-text-main/60 leading-relaxed">
+              <p className="text-[#8b949e] leading-relaxed font-medium">
                 {feature.description}
               </p>
             </motion.div>
