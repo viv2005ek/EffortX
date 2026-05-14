@@ -10,13 +10,12 @@ export const analyzeCommit = async (githubUrl) => {
 };
 
 export const estimatePlaygroundTokens = async (messages) => {
-  // Use local backend or current api baseURL (might need to change to local if testing)
-  const response = await api.post('http://localhost:5000/api/playground/estimate', { messages });
+  const response = await api.post('/playground/estimate', { messages });
   return response.data;
 };
 
 export const chatWithPlayground = async (messages, walletAddress, model) => {
-  const response = await api.post('http://localhost:5000/api/playground/chat', { messages, walletAddress, model });
+  const response = await api.post('/playground/chat', { messages, walletAddress, model });
   return response.data;
 };
 
